@@ -1,3 +1,4 @@
+
 import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Random;
@@ -9,95 +10,69 @@ public class TaskManager {
     private HashMap<Integer,EpicTask> epicTasksData;
     private Scanner scanner;
     Random random;
-    TaskManager(){
-        scanner = new Scanner(System.in);
+    TaskManager(Scanner scanner){
+        this.scanner = scanner;
         regularTasksData = new HashMap<>();
         epicTasksData = new HashMap<>();
         random = new Random(); //для генерации ключа задания в HashMap
     }
-    public void start (){
-        while (programIsOn) {
-            printMenu();
-            int option = Integer.parseInt(scanner.nextLine());
-            switch (option) {
-                case 1:
-                    printAllTasks();
-                    break;
-                case 2:
-                    printInProgress();
-                    break;
-                case 3:
-                    break;
-                case 4:
-                    regularTasksData.put(generateUniqueID(), createTask());
-                    System.out.println("Задание добавлено!");
-                    break;
-                case 5:
-                    epicTasksData.put(generateUniqueID(), createEpicTask());
-                    System.out.println("\"Эпик\" задание добавлено!");
-                    break;
-                case 8:
-                    editOrDelete();
-                    break;
-                case 9:
-                    deleteAllTasks();
-                    break;
-                case 0:
-                    programIsOn = false;
-                    scanner.close();
-                    System.out.println("Пока!");
-                    break;
-                default:
-                    System.out.println("Неверный ввод.");
-            }
-        }
-    }
 
-    private @NotNull Task createTask(){
+    private @NotNull Task createTask(int id){
         System.out.println("Введите название задания:");
         String title = scanner.nextLine();
         System.out.println("Введите описание задания:");
         String description = scanner.nextLine();
-        return new Task(title, description);
+        return new Task(title, description, id);
     }
 
-    private @NotNull EpicTask createEpicTask(){
+    private @NotNull EpicTask createEpicTask(int id){
         System.out.println("Введите название \"Эпик\" задания:");
         String title = scanner.nextLine();
         System.out.println("Введите описание \"Эпик\" задания:");
         String description = scanner.nextLine();
-        EpicTask newTask = new EpicTask(("\"Эпик\" " + title), description);
+        EpicTask newTask = new EpicTask(("\"Эпик\" " + title), description, id);
         System.out.println("Введите количество подзадач: ");
         int amount = Integer.parseInt(scanner.nextLine());
         for (int i = 0; i < amount; i++){
-            System.out.println("Создание " + i+1 + " подзадачи:");
-            newTask.addPart(scanner, generateUniqueID());
+            System.out.println("Создание " + (i+1) + " подзадачи:");
+            newTask.addPart(scanner, (i+1));
         }
         return newTask;
     }
 
+    public void addRegularTask(){
+        int newID = generateUniqueID();
+        regularTasksData.put(newID, createTask(newID));
+        System.out.println("Задание добавлено! (ID - " + newID + ")");
+    }
+
+    public void addEpicTask(){
+        int newID = generateUniqueID();
+        epicTasksData.put(newID, createEpicTask(newID));
+        System.out.println("\"Эпик\" задание добавлено! (ID - " + newID + ")");
+    }
+
     private int generateUniqueID(){
         int result = random.nextInt(1000);
-        if (!regularTasksData.isEmpty()) {
-            while (regularTasksData.containsKey(result)) {
-                result = random.nextInt(1000);
-            }
+        while ((!regularTasksData.isEmpty() && regularTasksData.containsKey(result))
+                || (!epicTasksData.isEmpty() && epicTasksData.containsKey(result)) ) {
+            result = random.nextInt(1000);
         }
         return result;
     }
 
-    private void printAllTasks(){
+    public void printAllTasks(){
         for (Integer key : regularTasksData.keySet()){
-            System.out.println("ID задачи: " + key + ". Тип задачи: Обычная задача");
+            System.out.println("\nТип задачи: Обычная задача");
             regularTasksData.get(key).printInfo();
         }
         for (Integer key : epicTasksData.keySet()){
-            System.out.println("ID задачи: " + key + ". Тип задачи: \"Эпик\" задача.");
-            regularTasksData.get(key).printInfo();
+            System.out.println("\nТип задачи: \"Эпик\" задача.");
+            epicTasksData.get(key).printInfo();
         }
     }
 
-    private void printInProgress(){
+    public void printInProgress(){
         System.out.println("Вывод обычных текущих задач: ");
         for (Integer key : regularTasksData.keySet()){
             if (regularTasksData.get(key).getStatus().equals("IN_PROGRESS")) {
@@ -114,7 +89,24 @@ public class TaskManager {
         }
     }
 
-    private void deleteAllTasks(){
+    public void printAllDone(){
+        System.out.println("Вывод обычных завершенных задач: ");
+        for (Integer key : regularTasksData.keySet()){
+            if (regularTasksData.get(key).getStatus().equals("DONE")) {
+                System.out.println("\nID задачи: " + key + ".");
+                regularTasksData.get(key).printInfo();
+            }
+        }
+        System.out.println("Вывод завершенных \"Эпик\" задач: ");
+        for (Integer key : epicTasksData.keySet()){
+            if (epicTasksData.get(key).getStatus().equals("DONE")) {
+                System.out.println("\nID задачи: " + key + ".");
+                epicTasksData.get(key).printInfo();
+            }
+        }
+    }
+
+    public void deleteAllTasks(){
         if (regularTasksData.isEmpty()){
             System.out.println("Список обычных задач пуст.");
         } else {
@@ -133,7 +125,7 @@ public class TaskManager {
         }
     }
 
-    private void editOrDelete(){
+    public void editOrDelete(){
         System.out.println("Введите 1 для поиска обычной задачи. 2 - для \"Эпик\".");
         int command = Integer.parseInt(scanner.nextLine());
         System.out.println("Введите ID задачи: ");
@@ -171,7 +163,7 @@ public class TaskManager {
 
     }
 
-    private void printMenu(){
+    public void printMenu(){
         System.out.println("\n1 - Вывод полного списка задач.");
         System.out.println("2 - Вывод списка текущих задач.");
         System.out.println("3 - Вывод списка завершенных задач.");

@@ -1,11 +1,12 @@
+
 import java.util.HashMap;
 import java.util.Scanner;
 
 public class EpicTask extends Task{
     public HashMap<Integer, Task> epicTaskParts;
 
-    public EpicTask(String title, String description) {
-        super(title, description);
+    public EpicTask(String title, String description, int id) {
+        super(title, description, id);
         epicTaskParts = new HashMap<>();
     }
 
@@ -26,8 +27,8 @@ public class EpicTask extends Task{
         refreshStatus();
     }
 
-    public void changeStatus(String newStatus){
-        this.status = newStatus;
+    public void changeStatus(){
+        this.moveStatus();
     }
 
     public void refreshStatus(){
@@ -35,7 +36,7 @@ public class EpicTask extends Task{
             if (this.getStatus().equals("NEW")){
                 for(Integer taskID : epicTaskParts.keySet()){
                     if (!epicTaskParts.get(taskID).getStatus().equals("NEW")){
-                        this.changeStatus("IN_PROGRESS");
+                        this.changeStatus();
                         break;
                     }
                 }
@@ -49,20 +50,17 @@ public class EpicTask extends Task{
                     }
                 }
                 if (isDone){
-                    this.changeStatus("DONE");
+                    this.changeStatus();
                 }
             }
         }
     }
 
-    public void addPart(Scanner scanner, int ID){
+    public void addPart(Scanner scanner, int id){
         System.out.println("Введите название подзадачи:");
         String title = scanner.nextLine();
         System.out.println("Введите описание подзадачи:");
         String description = scanner.nextLine();
-        while (epicTaskParts.containsKey(ID)){
-            ID++;
-        }
-        epicTaskParts.put(ID, new Task(title, description));
+        epicTaskParts.put(id, new Task(title, description, id));
     }
 }
