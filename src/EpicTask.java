@@ -1,7 +1,4 @@
-
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Scanner;
 
 public class EpicTask extends Task{
 
@@ -18,9 +15,5 @@ public class EpicTask extends Task{
         for (Integer subTaskId : subTasksIdentifiers){
             System.out.print(subTaskId + ", ");
         }
-    }
-
-    public boolean boundedToSubTask(int id){
-        return subTasksIdentifiers.contains(id);
     }
 }

@@ -1,7 +1,6 @@
 import java.util.ArrayList;
 
 public class Task {
-    //private final String[] statuses = {"NEW", "IN_PROGRESS", "DONE"};
     private enum Status{
         NEW("NEW"), IN_PROGRESS("IN_PROGRESS"), DONE("DONE");
         private String status;
@@ -19,10 +18,6 @@ public class Task {
     public Task(String title, String description, int id){
         this.title = title;
         this.description = description;
-        this.status = Status.NEW;
-        this.id = id;
-    }
-    public Task(int id) {
         this.status = Status.NEW;
         this.id = id;
     }
