@@ -1,4 +1,4 @@
-import java.util.ArrayList;
+package TaskData;
 
 public class Task {
     private enum Status{
@@ -8,37 +8,28 @@ public class Task {
             this.status = status;
         }
     }
-    protected Status status;
-    public String title;
-    public ArrayList<Integer> subTasksIdentifiers;
-    public String description;
-    public int id;
-    public int boundedTo;
+    private Status status;
+    private String title;
+    private String description;
+    private int id;
 
-    public Task(String title, String description, int id){
+    public Task(String title, String description){
         this.title = title;
         this.description = description;
         this.status = Status.NEW;
-        this.id = id;
+        this.id = 0;
     }
-    public Task(){
-        this.status = Status.NEW;
-    }
-
     public boolean isEqualStatus(String status){
         return this.status.toString().equals(status);
     }
 
     public void moveStatus(){
         switch (status){
-            case NEW:
-                status = Status.IN_PROGRESS;
-                break;
             case IN_PROGRESS:
                 status = Status.DONE;
                 break;
             default:
-                System.out.println("Невозможно изменить статус задачи.");
+                status = Status.IN_PROGRESS;
         }
     }
     public Status getStatus() {
@@ -67,12 +58,6 @@ public class Task {
 
     public void setId(int id) {
         this.id = id;
-    }
-    public int getBoundedTo() {
-        return boundedTo;
-    }
-    public void setBoundedTo(int boundedTo) {
-        this.boundedTo = boundedTo;
     }
     public void printInfo(){
         System.out.println("ID задачи - '" + id  + '\''
