@@ -91,9 +91,10 @@ public class TaskManager {
                 if (tasksData.get(taskId) instanceof SubTask) {
                     int updateId = getBoundId(tasksData.get(taskId));
                     tasksData.remove(taskId);
+                    removeSubTaskId(tasksData.get(updateId), taskId);
                     updateEpicTaskStatus(updateId);
                 } else if (tasksData.get(taskId) instanceof EpicTask) {
-                    for (Integer subTaskId : subTasksIdentifiers(tasksData.get(taskId))) {
+                    for (Integer subTaskId : subTasksIdentifiers((EpicTask) tasksData.get(taskId))) {
                         tasksData.remove(subTaskId);
                     }
                     tasksData.remove(taskId);
@@ -104,9 +105,10 @@ public class TaskManager {
         }
     }
 
-    private ArrayList<Integer> subTasksIdentifiers(Object epicTask){
-        return ((EpicTask) epicTask).getFullSubTasksList();
+    private ArrayList<Integer> subTasksIdentifiers(EpicTask epicTask){
+        return epicTask.getFullSubTasksList();
     }
+    
 
     private void addSubTaskToEpic(int subTaskId, Object epicTask){
         ((EpicTask) epicTask).addSubTaskId(subTaskId);
@@ -116,47 +118,24 @@ public class TaskManager {
         return ((SubTask) subTask).getBoundedTo();
     }
 
-    public Task getTaskOrNull(int taskId){
-        if (tasksData.containsKey(taskId)) {
-            return tasksData.get(taskId);
-        } else {
-            System.out.println("Задача не найдена");
-            return null;
-        }
-    }
-    public void getInfoById(int taskId){
-        tasksData.get(taskId).printInfo();
-    }
-
-    public void updateEditedTask(Task editedTask){
-        tasksData.put(editedTask.getId(), editedTask);
-        if (editedTask instanceof EpicTask){
-            updateEpicTaskStatus(editedTask.getId());
-        } else if (editedTask instanceof SubTask){
-            updateEpicTaskStatus(((SubTask) editedTask).getBoundedTo());
-        }
+    private void removeSubTaskId(Object epicTask, int id){
+        ((EpicTask) epicTask).removeSubTaskId(id);
     }
 
     public void updateEpicTaskStatus(int epicTaskId) {
-        for (Integer subTaskId : subTasksIdentifiers(tasksData.get(epicTaskId))){
-            if (!tasksData.containsKey(subTaskId)){
-                ((EpicTask) tasksData.get(epicTaskId)).removeSubTaskId(subTaskId);
-            }
-        }
-
-        if (tasksData.get(epicTaskId).isEqualStatus("NEW")){
-            for(Integer subTaskId : subTasksIdentifiers(tasksData.get(epicTaskId))){
-                if (!tasksData.get(subTaskId).isEqualStatus("NEW")){
+        if (tasksData.get(epicTaskId).getStatus().equals("NEW")){
+            for(Integer subTaskId : subTasksIdentifiers((EpicTask) tasksData.get(epicTaskId))){
+                if (!tasksData.get(subTaskId).getStatus().equals("NEW")){
                     tasksData.get(epicTaskId).moveStatus();
                     break;
                 }
             }
         }
 
-        if (tasksData.get(epicTaskId).isEqualStatus("IN_PROGRESS")){
+        if (tasksData.get(epicTaskId).getStatus().equals("IN_PROGRESS")){
             boolean isDone = true;
-            for(Integer subTaskId : subTasksIdentifiers(tasksData.get(epicTaskId))){
-                if (!tasksData.get(subTaskId).isEqualStatus("DONE")){
+            for(Integer subTaskId : subTasksIdentifiers((EpicTask) tasksData.get(epicTaskId))){
+                if (!tasksData.get(subTaskId).getStatus().equals("DONE")){
                     isDone = false;
                     break;
                 }
@@ -164,9 +143,9 @@ public class TaskManager {
             if (isDone){
                 tasksData.get(epicTaskId).moveStatus();
             }
-        } else if (tasksData.get(epicTaskId).isEqualStatus("DONE")){
-            for(Integer subTaskId : subTasksIdentifiers(tasksData.get(epicTaskId))){
-                if (!tasksData.get(subTaskId).isEqualStatus("DONE")){
+        } else if (tasksData.get(epicTaskId).getStatus().equals("DONE")){
+            for(Integer subTaskId : subTasksIdentifiers((EpicTask) tasksData.get(epicTaskId))){
+                if (!tasksData.get(subTaskId).getStatus().equals("DONE")){
                     tasksData.get(epicTaskId).moveStatus();
                     break;
                 }
@@ -179,7 +158,7 @@ public class TaskManager {
             if (tasksData.get(taskId) instanceof EpicTask){
                 System.out.println("\nТип задачи: \"Эпик\" задача");
                 tasksData.get(taskId).printInfo();
-                for (Integer subTaskId : subTasksIdentifiers(tasksData.get(taskId))){
+                for (Integer subTaskId : subTasksIdentifiers((EpicTask) tasksData.get(taskId))){
                     System.out.println("Подзадача \"Эпик\" задачи номер " + taskId + ":");
                     tasksData.get(subTaskId).printInfo();
                 }
@@ -193,7 +172,7 @@ public class TaskManager {
     public void printInProgress() {
         System.out.println("Вывод текущих задач: ");
         for (Integer taskId : tasksData.keySet()) {
-            if (tasksData.get(taskId).isEqualStatus("IN_PROGRESS")) {
+            if (tasksData.get(taskId).getStatus().equals("IN_PROGRESS")) {
                 tasksData.get(taskId).printInfo();
             }
         }
@@ -202,7 +181,7 @@ public class TaskManager {
     public void printAllDone() {
         System.out.println("Вывод текущих задач: ");
         for (Integer taskId : tasksData.keySet()) {
-            if (tasksData.get(taskId).isEqualStatus("DONE")) {
+            if (tasksData.get(taskId).getStatus().equals("DONE")) {
                 tasksData.get(taskId).printInfo();
             }
         }
@@ -216,6 +195,28 @@ public class TaskManager {
                 tasksData.remove(key);
             }
             System.out.println("Все задачи удалены.");
+        }
+    }
+
+    public Task getTaskOrNull(int taskId){
+        if (tasksData.containsKey(taskId)) {
+            return tasksData.get(taskId);
+        } else {
+            System.out.println("Задача не найдена");
+            return null;
+        }
+    }
+
+    public void getInfoById(int taskId){
+        tasksData.get(taskId).printInfo();
+    }
+
+    public void updateEditedTask(Task editedTask){
+        tasksData.put(editedTask.getId(), editedTask);
+        if (editedTask instanceof EpicTask){
+            updateEpicTaskStatus(editedTask.getId());
+        } else if (editedTask instanceof SubTask){
+            updateEpicTaskStatus(((SubTask) editedTask).getBoundedTo());
         }
     }
 }

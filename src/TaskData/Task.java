@@ -2,11 +2,9 @@ package TaskData;
 
 public class Task {
     private enum Status{
-        NEW("NEW"), IN_PROGRESS("IN_PROGRESS"), DONE("DONE");
-        private String status;
-        Status(String status){
-            this.status = status;
-        }
+        NEW,
+        IN_PROGRESS,
+        DONE
     }
     private Status status;
     private String title;
@@ -19,9 +17,6 @@ public class Task {
         this.status = Status.NEW;
         this.id = 0;
     }
-    public boolean isEqualStatus(String status){
-        return this.status.toString().equals(status);
-    }
 
     public void moveStatus(){
         switch (status){
@@ -32,8 +27,9 @@ public class Task {
                 status = Status.IN_PROGRESS;
         }
     }
-    public Status getStatus() {
-        return status;
+
+    public String getStatus() {
+        return status.toString();
     }
 
     public String getTitle() {
