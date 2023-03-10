@@ -2,16 +2,19 @@ import TaskData.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Scanner;
 
 public class InMemoryTaskManager implements TaskManager{
     private HashMap<Integer, Task> tasksData;
     private Scanner scanner;
     private int idCounter;
+    private HistoryManager history;
     InMemoryTaskManager(Scanner scanner){
         this.scanner = scanner;
         tasksData = new HashMap<>();
         idCounter = 0;
+        history = Managers.getDefaultHistory();
     }
 
     @Override
@@ -199,6 +202,51 @@ public class InMemoryTaskManager implements TaskManager{
                 tasksData.remove(key);
             }
             System.out.println("Все задачи удалены.");
+        }
+    }
+
+
+    @Override
+    public void getTask(int taskId){
+        tasksData.get(taskId).printInfo();
+        history.add(tasksData.get(taskId));
+    }
+
+    @Override
+    public void getEpic(int taskId){
+        tasksData.get(taskId).printInfo();
+        history.add(tasksData.get(taskId));
+    }
+
+    @Override
+    public void getSubtask(int taskId){
+        tasksData.get(taskId).printInfo();
+        history.add(tasksData.get(taskId));
+    }
+
+    @Override
+    public void getTaskInfoById(int taskId){
+        if (tasksData.containsKey(taskId)) {
+            System.out.println("Информация о задаче:");
+            tasksData.get(taskId).printInfo();
+        } else {
+            System.out.println("Задача с таким идентификатором не содержится в списке.");
+            return;
+        }
+
+        if (tasksData.get(taskId) instanceof EpicTask){
+            getEpic(taskId);
+        } else if (tasksData.get(taskId) instanceof SubTask){
+            getSubtask(taskId);
+        } else {
+            getTask(taskId);
+        }
+    }
+
+    @Override
+    public void historyView(){
+        for (Task task : history.getHistory()){
+            task.printInfo();
         }
     }
 }

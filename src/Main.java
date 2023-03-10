@@ -7,7 +7,7 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        InMemoryTaskManager taskManager = new InMemoryTaskManager(scanner);
+        TaskManager taskManager = Managers.getDefault();
         boolean programIsOn = true;
         while (programIsOn) {
             printMenu();
@@ -23,23 +23,43 @@ public class Main {
                     taskManager.printAllDone();
                     break;
                 case 4:
-                    Task task = createTask(scanner);
-                    taskManager.addRegularTask(task);
+                    System.out.println("1 - Создать новую простую задачу.");
+                    System.out.println("2 - Создать \"Эпик\".");
+                    System.out.println("3 - Создать новую подзадачу.");
+                    System.out.println("4 - Назад.");
+                    option = Integer.parseInt(scanner.nextLine());
+                    switch (option) {
+                        case 1:
+                            Task task = createTask(scanner);
+                            taskManager.addRegularTask(task);
+                            break;
+                        case 2:
+                            EpicTask epicTask = createEpicTask(scanner);
+                            ArrayList<SubTask> subTasks = createSubTasks(scanner);
+                            taskManager.addEpicTask(epicTask, subTasks);
+                            break;
+                        case 3:
+                            SubTask newSubTask = createNewSubTask(scanner);
+                            taskManager.addSubTask(newSubTask);
+                            break;
+                        case 4:
+                            break;
+                    }
                     break;
                 case 5:
-                    EpicTask epicTask = createEpicTask(scanner);
-                    ArrayList<SubTask> subTasks = createSubTasks(scanner);
-                    taskManager.addEpicTask(epicTask, subTasks);
+                    System.out.println("Введите ID задачи: ");
+                    option = Integer.parseInt(scanner.nextLine());
+
+                    taskManager.getTaskInfoById(option);
                     break;
                 case 6:
-                    SubTask newSubTask = createNewSubTask(scanner);
-                    taskManager.addSubTask(newSubTask);
+                    taskManager.historyView();
                     break;
                 case 7:
                     System.out.println("Введите ID задачи: ");
-                    int taskId = Integer.parseInt(scanner.nextLine());
+                    option = Integer.parseInt(scanner.nextLine());
 
-                    taskManager.editOrDelete(taskId);
+                    taskManager.editOrDelete(option);
                     break;
                 case 9:
                     taskManager.deleteAllTasks();
@@ -98,8 +118,8 @@ public class Main {
         System.out.println("2 - Вывод списка текущих задач.");
         System.out.println("3 - Вывод списка завершенных задач.");
         System.out.println("4 - Создать новую задачу.");
-        System.out.println("5 - Создать \"Эпик\".");
-        System.out.println("6 - Создать новую подзадачу.");
+        System.out.println("5 - Просмотри задачи по ID.");
+        System.out.println("6 - История просмотров.");
         System.out.println("7 - Редактирование данных или статуса задачи по ID.");
         System.out.println("9 - Удаление всех задач.");
         System.out.println("0 - Выход");
