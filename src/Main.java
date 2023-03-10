@@ -7,7 +7,7 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        TaskManager taskManager = new TaskManager(scanner);
+        InMemoryTaskManager taskManager = new InMemoryTaskManager(scanner);
         boolean programIsOn = true;
         while (programIsOn) {
             printMenu();
@@ -36,7 +36,10 @@ public class Main {
                     taskManager.addSubTask(newSubTask);
                     break;
                 case 7:
-                    taskManager.editOrDelete();
+                    System.out.println("Введите ID задачи: ");
+                    int taskId = Integer.parseInt(scanner.nextLine());
+
+                    taskManager.editOrDelete(taskId);
                     break;
                 case 9:
                     taskManager.deleteAllTasks();
