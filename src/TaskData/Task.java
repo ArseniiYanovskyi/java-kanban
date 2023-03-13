@@ -1,12 +1,12 @@
 package TaskData;
 
 public class Task {
-    private enum Status{
+    protected enum Status{
         NEW,
         IN_PROGRESS,
         DONE
     }
-    private Status status;
+    protected Status status;
     private String title;
     private String description;
     private int id;
@@ -18,14 +18,8 @@ public class Task {
         this.id = 0;
     }
 
-    public void moveStatus(){
-        switch (status){
-            case IN_PROGRESS:
-                status = Status.DONE;
-                break;
-            default:
-                status = Status.IN_PROGRESS;
-        }
+    public void setStatus(String status){
+        this.status = Status.valueOf(status);
     }
 
     public String getStatus() {

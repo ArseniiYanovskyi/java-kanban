@@ -53,13 +53,47 @@ public class Main {
                     taskManager.getTaskInfoById(option);
                     break;
                 case 6:
-                    taskManager.historyView();
                     break;
                 case 7:
                     System.out.println("Введите ID задачи: ");
                     option = Integer.parseInt(scanner.nextLine());
-
-                    taskManager.editOrDelete(option);
+                    if (taskManager.isContains(option)) {
+                        taskManager.getTaskInfoById(option);
+                        System.out.println("Введите 1 для редактирования. "
+                                + "2 - для продвижения статуса. 3 - удаления. "
+                                + "или любой другой символ для отмены.");
+                        String command = scanner.nextLine();
+                        Task editTask = taskManager.getTask(option);
+                        switch (command) {
+                            case "1":
+                                System.out.println("Введите 1 для редактирования названия, 2 для описания.");
+                                command = scanner.nextLine();
+                                switch (command) {
+                                    case "1":
+                                        System.out.println("Введите новое название подзадачи:");
+                                        String newTitle = scanner.nextLine();
+                                         editTask.setTitle(newTitle);
+                                         break;
+                                    case "2":
+                                        System.out.println("Введите новое описание подзадачи:");
+                                        String newDescription = scanner.nextLine();
+                                        editTask.setDescription(newDescription);
+                                }
+                                break;
+                            case"2":
+                                if (editTask instanceof EpicTask) {
+                                    System.out.println("Статус \"Эпик\" задачи изменяется по мере изменения статуса подзадач.");
+                                } else if (editTask instanceof SubTask) {
+                                    System.out.println("Введите новый статус:");
+                                    command = scanner.nextLine();
+                                    editTask.setStatus(command);
+                                    taskManager.updateEpicTaskStatus(((SubTask) editTask).getBoundedTo());
+                                } else {
+                                    command = scanner.nextLine();
+                                    editTask.setStatus(command);
+                                }
+                        }
+                    }
                     break;
                 case 9:
                     taskManager.deleteAllTasks();
@@ -118,7 +152,7 @@ public class Main {
         System.out.println("2 - Вывод списка текущих задач.");
         System.out.println("3 - Вывод списка завершенных задач.");
         System.out.println("4 - Создать новую задачу.");
-        System.out.println("5 - Просмотри задачи по ID.");
+        System.out.println("5 - Просмотр задачи по ID.");
         System.out.println("6 - История просмотров.");
         System.out.println("7 - Редактирование данных или статуса задачи по ID.");
         System.out.println("9 - Удаление всех задач.");

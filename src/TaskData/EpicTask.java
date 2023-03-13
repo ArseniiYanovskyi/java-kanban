@@ -20,6 +20,10 @@ public class EpicTask extends Task {
         subTasksIdentifiers.remove(Integer.valueOf(subTaskId));
     }
 
+    public void resetStatus(){
+        this.status = Status.NEW;
+    }
+
     @Override
     public void printInfo(){
         super.printInfo();
