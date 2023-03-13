@@ -13,7 +13,7 @@ public class InMemoryHistoryManager implements HistoryManager{
     public void add(Task task){
         reviewHistory.add(task);
         if (reviewHistory.size() > MAX_HISTORY_SIZE){
-            reviewHistory.remove(0);
+            reviewHistory.removeFirst();
         }
     }
     @Override

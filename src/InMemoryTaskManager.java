@@ -7,11 +7,9 @@ import java.util.Scanner;
 
 public class InMemoryTaskManager implements TaskManager{
     private HashMap<Integer, Task> tasksData;
-    private Scanner scanner;
     private int idCounter;
     private HistoryManager history;
-    public InMemoryTaskManager(Scanner scanner, HistoryManager history){
-        this.scanner = scanner;
+    public InMemoryTaskManager(HistoryManager history){
         tasksData = new HashMap<>();
         idCounter = 0;
         this.history = history;
@@ -212,21 +210,16 @@ public class InMemoryTaskManager implements TaskManager{
     public void getTaskInfoById(int taskId){
         if (tasksData.containsKey(taskId)) {
             System.out.println("Информация о задаче:");
-            tasksData.get(taskId).printInfo();
+            if (tasksData.get(taskId) instanceof EpicTask){
+                getEpic(taskId).printInfo();
+            } else if (tasksData.get(taskId) instanceof SubTask){
+                getSubtask(taskId).printInfo();
+            } else {
+                getTask(taskId).printInfo();
+            }
         } else {
             System.out.println("Задача с таким идентификатором не содержится в списке.");
             return;
-        }
-
-        if (tasksData.get(taskId) instanceof EpicTask){
-            getEpic(taskId).printInfo();
-            history.add(tasksData.get(taskId));
-        } else if (tasksData.get(taskId) instanceof SubTask){
-            getSubtask(taskId).printInfo();
-            history.add(tasksData.get(taskId));
-        } else {
-            getTask(taskId).printInfo();
-            history.add(tasksData.get(taskId));
         }
     }
 
@@ -234,16 +227,19 @@ public class InMemoryTaskManager implements TaskManager{
     //я их сделал просто потому что в задании они указаны, а зачем они - для редактирования?
     @Override
     public Task getTask(int taskId){
+        history.add(tasksData.get(taskId));
         return tasksData.get(taskId);
     }
 
     @Override
-    public EpicTask getEpic(int taskId){
+    public EpicTask getEpic(int taskId) {
+        history.add(tasksData.get(taskId));
         return ((EpicTask) tasksData.get(taskId));
     }
 
     @Override
     public SubTask getSubtask(int taskId){
+        history.add(tasksData.get(taskId));
         return ((SubTask) tasksData.get(taskId));
     }
 
