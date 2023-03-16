@@ -18,10 +18,6 @@ public class InMemoryHistoryManager implements HistoryManager{
     }
     @Override
     public List<Task> getHistory(){
-        List<Task> history = (List<Task>) reviewHistory.clone();
-        /*надо ли клонировать каждый из Task?
-        перед добавлением в историю
-        или перед возвращением списка истории?*/
-        return history;
+        return (List<Task>) reviewHistory.clone();
     }
 }

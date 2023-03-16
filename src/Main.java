@@ -50,15 +50,15 @@ public class Main {
                     System.out.println("Введите ID задачи: ");
                     option = Integer.parseInt(scanner.nextLine());
 
-                    taskManager.getTaskInfoById(option);
+                    taskManager.getTask(option).printInfo();
                     break;
                 case 6:
                     break;
                 case 7:
                     System.out.println("Введите ID задачи: ");
                     option = Integer.parseInt(scanner.nextLine());
-                    if (taskManager.isContains(option)) {
-                        taskManager.getTaskInfoById(option);
+                    if (taskManager.getTask(option) != null) {
+                        taskManager.getTask(option).printInfo();
                         System.out.println("Введите 1 для редактирования. "
                                 + "2 - для продвижения статуса. 3 - удаления. "
                                 + "или любой другой символ для отмены.");

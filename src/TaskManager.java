@@ -8,7 +8,9 @@ public interface TaskManager {
     public void addEpicTask(EpicTask epicTask, ArrayList<SubTask> subTasks);
     public void addSubTask (SubTask newSubTask);
 
-    public void editTask(Task editedTask);
+    public void editRegularTask(Task editedTask);
+    public void editEpicTask(EpicTask epicTask);
+    public void editSubTask(SubTask subTask);
     public void updateEpicTaskStatus(int taskId);
 
 
@@ -21,9 +23,6 @@ public interface TaskManager {
     public void printAllTasks();
     public void printInProgress();
     public void printAllDone();
-    public void getTaskInfoById(int id);
-
-    public boolean isContains(int taskId);
 
     public Task getTask(int id);
     public EpicTask getEpic(int id);

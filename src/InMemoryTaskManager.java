@@ -25,16 +25,21 @@ public class InMemoryTaskManager implements TaskManager{
     @Override
     public void addEpicTask(EpicTask epicTask, ArrayList<SubTask> subTasks){
         epicTask.setId(++idCounter);
-        for (SubTask subTask : subTasks) {
-            subTask.setId(++idCounter);
-            subTask.setBoundedTo(epicTask.getId());
-            tasksData.put(idCounter, subTask);
-            epicTask.addSubTaskId(idCounter);
+        if (subTasks != null) {
+            for (SubTask subTask : subTasks) {
+                subTask.setId(++idCounter);
+                subTask.setBoundedTo(epicTask.getId());
+                tasksData.put(idCounter, subTask);
+                epicTask.addSubTaskId(idCounter);
+            }
+            System.out.println("Подзадачи добавлены!");
         }
-        System.out.println("Подзадачи добавлены!");
         tasksData.put(epicTask.getId(), epicTask);
+        updateEpicTaskStatus(epicTask.getId());
         System.out.println("\"Эпик\" задание добавлено! (ID - " + idCounter + ")");
     }
+
+
 
     @Override
     public void addSubTask (SubTask newSubTask){
@@ -49,15 +54,23 @@ public class InMemoryTaskManager implements TaskManager{
     }
 
     @Override
-    public void editTask(Task editedTask){
-        if (editedTask instanceof SubTask){
+    public void editRegularTask(Task editedTask){
             tasksData.remove(editedTask.getId());
             tasksData.put(editedTask.getId(), editedTask);
-            updateEpicTaskStatus(((SubTask) editedTask).getBoundedTo());
-        } else {
-            tasksData.remove(editedTask.getId());
-            tasksData.put(editedTask.getId(), editedTask);
-        }
+    }
+
+    @Override
+    public void editEpicTask(EpicTask editedEpicTask){
+        tasksData.remove(editedEpicTask.getId());
+        tasksData.put(editedEpicTask.getId(), editedEpicTask);
+        updateEpicTaskStatus(editedEpicTask.getId());
+    }
+
+    @Override
+    public void editSubTask(SubTask editedSubTask){
+        tasksData.remove(editedSubTask.getId());
+        tasksData.put(editedSubTask.getId(), editedSubTask);
+        updateEpicTaskStatus(editedSubTask.getBoundedTo());
     }
 
     @Override
@@ -123,10 +136,6 @@ public class InMemoryTaskManager implements TaskManager{
         }
     }
 
-    public boolean isContains(int taskId){
-        return tasksData.containsKey(taskId);
-    }
-
     private ArrayList<Integer> subTasksIdentifiers(EpicTask epicTask){
         return epicTask.getFullSubTasksList();
     }
@@ -135,7 +144,7 @@ public class InMemoryTaskManager implements TaskManager{
     public void updateEpicTaskStatus(int epicTaskId) {
         ((EpicTask) tasksData.get(epicTaskId)).resetStatus();
 
-        if (((EpicTask) tasksData.get(epicTaskId)).getFullSubTasksList() != null){
+        if (((EpicTask) tasksData.get(epicTaskId)).getFullSubTasksList().size() > 0){
             for(Integer subTaskId : subTasksIdentifiers((EpicTask) tasksData.get(epicTaskId))){
                 if (!tasksData.get(subTaskId).getStatus().equals("NEW")){
                     tasksData.get(epicTaskId).setStatus("IN_PROGRESS");
@@ -156,13 +165,6 @@ public class InMemoryTaskManager implements TaskManager{
             }
             if (isDone){
                 tasksData.get(epicTaskId).setStatus("DONE");
-            }
-        } else if (tasksData.get(epicTaskId).getStatus().equals("DONE")){
-            for(Integer subTaskId : subTasksIdentifiers((EpicTask) tasksData.get(epicTaskId))){
-                if (!tasksData.get(subTaskId).getStatus().equals("DONE")){
-                    tasksData.get(epicTaskId).setStatus("IN_PROGRESS");
-                    break;
-                }
             }
         }
     }
@@ -205,27 +207,7 @@ public class InMemoryTaskManager implements TaskManager{
     }
 
 
-
-    @Override
-    public void getTaskInfoById(int taskId){
-        if (tasksData.containsKey(taskId)) {
-            System.out.println("Информация о задаче:");
-            if (tasksData.get(taskId) instanceof EpicTask){
-                getEpic(taskId).printInfo();
-            } else if (tasksData.get(taskId) instanceof SubTask){
-                getSubtask(taskId).printInfo();
-            } else {
-                getTask(taskId).printInfo();
-            }
-        } else {
-            System.out.println("Задача с таким идентификатором не содержится в списке.");
-            return;
-        }
-    }
-
-    //нужно ли в следующих трёх методах возвращать копию объекта?
-    //я их сделал просто потому что в задании они указаны, а зачем они - для редактирования?
-    @Override
+     @Override
     public Task getTask(int taskId){
         history.add(tasksData.get(taskId));
         return tasksData.get(taskId);
