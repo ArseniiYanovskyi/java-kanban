@@ -6,6 +6,7 @@ import java.util.List;
 public interface TaskManager {
     public void addRegularTask(Task newTask);
     public void addEpicTask(EpicTask epicTask, ArrayList<SubTask> subTasks);
+    public void addEmptyEpicTask(EpicTask epicTask);
     public void addSubTask (SubTask newSubTask);
 
     public void editRegularTask(Task editedTask);

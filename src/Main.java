@@ -53,6 +53,9 @@ public class Main {
                     taskManager.getTask(option).printInfo();
                     break;
                 case 6:
+                    for (Task task : taskManager.getHistory()){
+                        task.printInfo();
+                    }
                     break;
                 case 7:
                     System.out.println("Введите ID задачи: ");
@@ -92,6 +95,9 @@ public class Main {
                                     command = scanner.nextLine();
                                     editTask.setStatus(command);
                                 }
+                                break;
+                            case"3":
+                                taskManager.deleteTaskByID(option);
                         }
                     }
                     break;
@@ -110,16 +116,16 @@ public class Main {
     }
     public static @NotNull Task createTask (Scanner scanner) {
         System.out.println("Введите название задания:");
-        String title = scanner.nextLine();
+        String title = scanner.nextLine() + "";
         System.out.println("Введите описание задания:");
-        String description = scanner.nextLine();
+        String description = scanner.nextLine() + "";
         return new Task(title, description);
     }
     public static @NotNull EpicTask createEpicTask(Scanner scanner){
         System.out.println("Введите название \"Эпик\" задания:");
-        String title = scanner.nextLine();
+        String title = scanner.nextLine() + "";
         System.out.println("Введите описание \"Эпик\" задания:");
-        String description = scanner.nextLine();
+        String description = scanner.nextLine() + "";
         return new EpicTask(("\"Эпик\" " + title), description);
     }
     public static @NotNull ArrayList<SubTask> createSubTasks(Scanner scanner){
@@ -129,9 +135,9 @@ public class Main {
         for (int i = 0; i < amount; i++){
             System.out.println("Создание " + (i+1) + " подзадачи:");
             System.out.println("Введите название подзадачи:");
-            String title = scanner.nextLine();
+            String title = scanner.nextLine() + "";
             System.out.println("Введите описание подзадачи:");
-            String description = scanner.nextLine();
+            String description = scanner.nextLine() + "";
             subTasks.add(new SubTask(title, description,0));
         }
         return subTasks;
@@ -141,9 +147,9 @@ public class Main {
         System.out.println("Введите ID \"Эпик\" задания, к которому будет привязана эта подзадача");
         int bound = Integer.parseInt(scanner.nextLine());
         System.out.println("Введите название подзадачи:");
-        String title = scanner.nextLine();
+        String title = scanner.nextLine() + "";
         System.out.println("Введите описание подзадачи:");
-        String description = scanner.nextLine();
+        String description = scanner.nextLine() + "";
         return new SubTask(title, description, bound);
     }
 

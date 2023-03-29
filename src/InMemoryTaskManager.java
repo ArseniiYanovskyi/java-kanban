@@ -39,7 +39,13 @@ public class InMemoryTaskManager implements TaskManager{
         System.out.println("\"Эпик\" задание добавлено! (ID - " + idCounter + ")");
     }
 
-
+    @Override
+    public void addEmptyEpicTask(EpicTask epicTask){
+        epicTask.setId(++idCounter);
+        tasksData.put(epicTask.getId(), epicTask);
+        updateEpicTaskStatus(epicTask.getId());
+        System.out.println("\"Эпик\" задание добавлено! (ID - " + idCounter + ")");
+    }
 
     @Override
     public void addSubTask (SubTask newSubTask){
@@ -79,6 +85,7 @@ public class InMemoryTaskManager implements TaskManager{
             if (!(tasksData.get(taskId) instanceof SubTask) &&
                 !(tasksData.get(taskId) instanceof EpicTask)){
                 tasksData.remove(taskId);
+                history.remove(taskId);
             }
         }
     }
@@ -89,6 +96,7 @@ public class InMemoryTaskManager implements TaskManager{
             if (tasksData.get(taskId) instanceof SubTask ||
                 tasksData.get(taskId) instanceof EpicTask){
                 tasksData.remove(taskId);
+                history.remove(taskId);
             }
         }
     }
@@ -100,6 +108,7 @@ public class InMemoryTaskManager implements TaskManager{
             if (tasksData.get(taskId) instanceof SubTask){
                 boundedId = (((SubTask) tasksData.get(taskId)).getBoundedTo());
                 tasksData.remove(taskId);
+                history.remove(taskId);
                 ((EpicTask) tasksData.get(boundedId)).removeSubTaskId(taskId);
                 updateEpicTaskStatus(boundedId);
             }
@@ -111,15 +120,19 @@ public class InMemoryTaskManager implements TaskManager{
         if (tasksData.get(taskId) instanceof SubTask) {
             int updateId = ((SubTask) tasksData.get(taskId)).getBoundedTo();
             tasksData.remove(taskId);
+            history.remove(taskId);
             ((EpicTask) tasksData.get(updateId)).removeSubTaskId(taskId);
             updateEpicTaskStatus(updateId);
         } else if (tasksData.get(taskId) instanceof EpicTask) {
             for (Integer subTaskId : subTasksIdentifiers((EpicTask) tasksData.get(taskId))) {
                 tasksData.remove(subTaskId);
+                history.remove(taskId);
             }
             tasksData.remove(taskId);
+            history.remove(taskId);
         } else {
             tasksData.remove(taskId);
+            history.remove(taskId);
         }
         System.out.println("Задача " + taskId + " удалена из списка.");
     }
@@ -143,7 +156,7 @@ public class InMemoryTaskManager implements TaskManager{
     @Override
     public void updateEpicTaskStatus(int epicTaskId) {
         ((EpicTask) tasksData.get(epicTaskId)).resetStatus();
-
+            //я видел ваш комментарий о предыдущей строчке, но не знаю как сделать лучше =(
         if (((EpicTask) tasksData.get(epicTaskId)).getFullSubTasksList().size() > 0){
             for(Integer subTaskId : subTasksIdentifiers((EpicTask) tasksData.get(epicTaskId))){
                 if (!tasksData.get(subTaskId).getStatus().equals("NEW")){
