@@ -1,3 +1,4 @@
+import HistoryData.HistoryNode;
 import TaskData.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,18 +11,6 @@ public class InMemoryHistoryManager implements HistoryManager{
     }
     @Override
     public void add(Task task){
-        /*
-        подскажите пожалуйста, чем эта реализация плоха,
-        ведь по теории её время выполнения равняется О(1)
-        создать вместо списка из 7 строчки LinkedHashMap
-        и удалять/добавлять таким образом
-
-        if (reviewHistory.containsKey(task.getId())){
-            this.remove(task.getId());
-        }
-        reviewHistory.put(task.getId(), task);
-        */
-
         historyLinkedList.linkLast(task);
     }
 
@@ -49,24 +38,26 @@ public class InMemoryHistoryManager implements HistoryManager{
             removeNode(historyNodeHashMap.get(id));
         }
 
-        public void removeNode(HistoryNode historyNode){
-            if (headNode.equals(historyNode)){
+        public void removeNode(HistoryNode historyNode) {
+            if (historyNode == null) {
+                return;
+            }
+            if (headNode.equals(historyNode)) {
                 headNode = historyNode.nextNode;
-            }
-
-            if (tailNode.equals(historyNode)){
+                if (historyNode.nextNode != null) {
+                    historyNode.nextNode.prevNode = null;
+                }
+            } else if (tailNode.equals(historyNode)) {
                 tailNode = historyNode.prevNode;
-            }
-
-            if (historyNode.prevNode != null && historyNode.nextNode != null){
+                if (historyNode.prevNode != null) {
+                    historyNode.prevNode.nextNode = null;
+                }
+            } else {
                 historyNode.nextNode.prevNode = historyNode.prevNode;
                 historyNode.prevNode.nextNode = historyNode.nextNode;
-            } else if (historyNode.prevNode == null && historyNode.nextNode != null) {
-                historyNode.nextNode.prevNode = null;
-            } else if (historyNode.prevNode != null && historyNode.nextNode == null){
-                historyNode.prevNode.nextNode = null;
+
+                historyNodeHashMap.remove(historyNode.data.getId());
             }
-            historyNodeHashMap.remove(historyNode.data.getId());
         }
 
         public void linkLast(Task task){
@@ -100,17 +91,16 @@ public class InMemoryHistoryManager implements HistoryManager{
             }
         }
 
-        //он должен возвращать в таком порядке, или в обратном?
+
         public ArrayList<Task> getTasks(){
             ArrayList<Task> returningList = new ArrayList<>();
 
             if (!historyNodeHashMap.isEmpty()){
                 HistoryNode writingData = headNode;
-                while (writingData.hasNext()) {
+                while (writingData != null) {
                     returningList.add(writingData.data);
                     writingData = writingData.nextNode;
                 }
-                returningList.add(writingData.data);
             }
 
             return returningList;

@@ -1,4 +1,6 @@
-package TaskData;
+package HistoryData;
+
+import TaskData.*;
 
 public class HistoryNode {
     public HistoryNode prevNode;
@@ -10,10 +12,6 @@ public class HistoryNode {
         this.nextNode = nextNode;
     }
 
-    public boolean hasNext(){
-        return nextNode != null;
-    }
-
     @Override
     public boolean equals(Object o){
         if (o == this) {
@@ -22,10 +20,9 @@ public class HistoryNode {
         if (o == null || o.getClass() != o.getClass()) {
             return false;
         }
-        if (data.getId() == ((HistoryNode) o).data.getId() ){
-            return true;
-        } else {
-            return false;
-        }
+
+        return (this.data.equals(((HistoryNode) o).data) &&
+                this.nextNode.equals(((HistoryNode) o).nextNode) &&
+                this.prevNode.equals(((HistoryNode) o).prevNode));
     }
 }

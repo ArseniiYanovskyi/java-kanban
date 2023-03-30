@@ -49,6 +49,21 @@ public class Task {
     public void setId(int id) {
         this.id = id;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
+        if (o == null || o.getClass() != o.getClass()) {
+            return false;
+        }
+
+        return (this.id == ((Task)o).getId() &&
+                this.status.equals(((Task)o).getStatus()) &&
+                this.title.equals(((Task)o).getTitle()) &&
+                this.description.equals(((Task)o).getDescription()));
+    }
     public void printInfo(){
         System.out.println("ID задачи - '" + id  + '\''
                 +"\nТекущий статус задачи - '" + status + '\''
