@@ -36,7 +36,7 @@ public class InMemoryHistoryManager implements HistoryManager{
 
         public void removeById(int id){
             if (historyNodeHashMap.containsKey(id)){
-            removeNode(historyNodeHashMap.get(id));
+                removeNode(historyNodeHashMap.get(id));
             }
         }
 
@@ -57,10 +57,9 @@ public class InMemoryHistoryManager implements HistoryManager{
             } else {
                 historyNode.nextNode.prevNode = historyNode.prevNode;
                 historyNode.prevNode.nextNode = historyNode.nextNode;
-
-                historyNodeHashMap.remove(historyNode.data.getId());
+            } //опечатка со скобочкой в прошлый раз вышла =(
+            historyNodeHashMap.remove(historyNode.data.getId());
             }
-        }
 
         public void linkLast(Task task){
             if(historyNodeHashMap.isEmpty()) {
