@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ManagerSaveException {
         Scanner scanner = new Scanner(System.in);
-        TaskManager taskManager = Managers.getDefault();
+        TaskManager taskManager = Managers.getFileBacked("dataFile.csv");
         boolean programIsOn = true;
         while (programIsOn) {
             printMenu();

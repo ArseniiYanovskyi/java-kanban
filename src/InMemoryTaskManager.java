@@ -1,14 +1,11 @@
 import TaskData.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class InMemoryTaskManager implements TaskManager{
-    private HashMap<Integer, Task> tasksData;
-    private int idCounter;
-    private HistoryManager history;
+    protected HashMap<Integer, Task> tasksData;
+    protected int idCounter;
+    protected HistoryManager history;
     public InMemoryTaskManager(HistoryManager history){
         tasksData = new HashMap<>();
         idCounter = 0;
@@ -17,7 +14,9 @@ public class InMemoryTaskManager implements TaskManager{
 
     @Override
     public void addRegularTask(Task newTask){
-        newTask.setId(++idCounter);
+        if (newTask.getId() != idCounter || newTask.getId() == 0){
+            newTask.setId(++idCounter);
+        }
         tasksData.put(idCounter, newTask);
         System.out.println("Задание добавлено! (ID - " + idCounter + ")");
     }
@@ -36,12 +35,14 @@ public class InMemoryTaskManager implements TaskManager{
         }
         tasksData.put(epicTask.getId(), epicTask);
         updateEpicTaskStatus(epicTask.getId());
-        System.out.println("\"Эпик\" задание добавлено! (ID - " + idCounter + ")");
+        System.out.println("\"Эпик\" задание добавлено! (ID - " + epicTask.getId() + ")");
     }
 
     @Override
     public void addEmptyEpicTask(EpicTask epicTask){
-        epicTask.setId(++idCounter);
+        if (epicTask.getId() != idCounter || epicTask.getId() == 0) {
+            epicTask.setId(++idCounter);
+        }
         tasksData.put(epicTask.getId(), epicTask);
         updateEpicTaskStatus(epicTask.getId());
         System.out.println("\"Эпик\" задание добавлено! (ID - " + idCounter + ")");
@@ -49,13 +50,16 @@ public class InMemoryTaskManager implements TaskManager{
 
     @Override
     public void addSubTask (SubTask newSubTask){
-        if (tasksData.containsKey(newSubTask.getBoundedTo())){
+        if (newSubTask.getId() != idCounter || newSubTask.getId() == 0){
             newSubTask.setId(++idCounter);
-            tasksData.put(idCounter, newSubTask);
-            ((EpicTask) tasksData.get(newSubTask.getBoundedTo())).addSubTaskId(idCounter);
+        }
+
+        tasksData.put(newSubTask.getId(), newSubTask);
+        if (tasksData.containsKey(newSubTask.getBoundedTo())) {
+            if (!((EpicTask) tasksData.get(newSubTask.getBoundedTo())).getFullSubTasksList().contains(newSubTask.getId())){
+                ((EpicTask) tasksData.get(newSubTask.getBoundedTo())).addSubTaskId(idCounter);
+            }
             updateEpicTaskStatus(newSubTask.getBoundedTo());
-        } else {
-            System.out.println("Задача не была добавлена в список, \"Эпик\" привязки не был найден.");
         }
     }
 
@@ -81,7 +85,8 @@ public class InMemoryTaskManager implements TaskManager{
 
     @Override
     public void deleteAllRegularTask(){
-        for (Integer taskId: tasksData.keySet()){
+        Set<Integer> taskIDs = new HashSet<>(tasksData.keySet());
+        for (Integer taskId: taskIDs){
             if (!(tasksData.get(taskId) instanceof SubTask) &&
                 !(tasksData.get(taskId) instanceof EpicTask)){
                 tasksData.remove(taskId);
@@ -92,7 +97,8 @@ public class InMemoryTaskManager implements TaskManager{
 
     @Override
     public void deleteAllEpicTasks(){
-        for (Integer taskId: tasksData.keySet()){
+        Set<Integer> taskIDs = new HashSet<>(tasksData.keySet());
+        for (Integer taskId: taskIDs){
             if (tasksData.get(taskId) instanceof SubTask ||
                 tasksData.get(taskId) instanceof EpicTask){
                 tasksData.remove(taskId);
@@ -104,7 +110,8 @@ public class InMemoryTaskManager implements TaskManager{
     @Override
     public void deleteAllSubTasks(){
         int boundedId;
-        for (Integer taskId: tasksData.keySet()){
+        Set<Integer> taskIDs = new HashSet<>(tasksData.keySet());
+        for (Integer taskId: taskIDs){
             if (tasksData.get(taskId) instanceof SubTask){
                 boundedId = (((SubTask) tasksData.get(taskId)).getBoundedTo());
                 tasksData.remove(taskId);
@@ -159,7 +166,8 @@ public class InMemoryTaskManager implements TaskManager{
             //я видел ваш комментарий о предыдущей строчке, но не знаю как сделать лучше =(
         if (((EpicTask) tasksData.get(epicTaskId)).getFullSubTasksList().size() > 0){
             for(Integer subTaskId : subTasksIdentifiers((EpicTask) tasksData.get(epicTaskId))){
-                if (!tasksData.get(subTaskId).getStatus().equals("NEW")){
+                if (tasksData.containsKey(subTaskId) &&
+                        !tasksData.get(subTaskId).getStatus().equals("NEW")){
                     tasksData.get(epicTaskId).setStatus("IN_PROGRESS");
                     break;
                 }
@@ -171,7 +179,8 @@ public class InMemoryTaskManager implements TaskManager{
         if (tasksData.get(epicTaskId).getStatus().equals("IN_PROGRESS")){
             boolean isDone = true;
             for(Integer subTaskId : subTasksIdentifiers((EpicTask) tasksData.get(epicTaskId))){
-                if (!tasksData.get(subTaskId).getStatus().equals("DONE")){
+                if (tasksData.containsKey(subTaskId) &&
+                        !tasksData.get(subTaskId).getStatus().equals("DONE")){
                     isDone = false;
                     break;
                 }

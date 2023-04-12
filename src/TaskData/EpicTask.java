@@ -32,5 +32,6 @@ public class EpicTask extends Task {
         for (Integer subTaskId : subTasksIdentifiers){
             System.out.print(subTaskId + " ");
         }
+        System.out.println("\n");
     }
 }
