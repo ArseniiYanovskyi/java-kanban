@@ -6,7 +6,7 @@ public class Managers {
         return new InMemoryTaskManager(getDefaultHistory());
     }
 
-    public static TaskManager getFileBacked(String dataFile)  throws ManagerSaveException{
+    public static TaskManager getFileBacked(String dataFile){
         return new FileBackedTaskManager(getDefaultHistory(), dataFile);
     }
     public static HistoryManager getDefaultHistory(){

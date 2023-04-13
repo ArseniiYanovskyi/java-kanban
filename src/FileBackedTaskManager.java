@@ -6,106 +6,124 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FileBackedTaskManager extends InMemoryTaskManager{
-    String dataFile;
-    Writer writer;
-    FileReader reader;
-    BufferedReader bufferedReader;
-    File dataCSV;
+    String fileName;
+    File dataFileCSV;
 
-    public FileBackedTaskManager(HistoryManager historyManager, String dataFile) throws ManagerSaveException {
+    public FileBackedTaskManager(HistoryManager historyManager, String fileName) throws ManagerSaveException {
         super(historyManager);
-        this.dataFile = dataFile;
+        this.fileName = fileName;
         try {
-            this.dataCSV = new File(dataFile);
-            if (dataCSV.exists() && !dataCSV.isDirectory()) {
+            this.dataFileCSV = new File(fileName);
+            if (dataFileCSV.exists() && !dataFileCSV.isDirectory()) {
                 loadFromFile();
             }
         } catch (IOException e) {
-            throw new ManagerSaveException("ManagerSaveException");
+            throw new ManagerSaveException("Ошибка чтения из файла.");
         }
 
 
     }
 
     public void loadFromFile() throws IOException {
-        this.reader = new FileReader(dataFile);
-        bufferedReader = new BufferedReader(reader);
+        FileReader reader = new FileReader(fileName);
+        try (BufferedReader bufferedReader = new BufferedReader(reader)) {
+            bufferedReader.readLine();
 
-        bufferedReader.readLine();
-        while (bufferedReader.ready()){
-            String dataLine = bufferedReader.readLine();
-            if (!dataLine.trim().isBlank()) {
-                String[] dataLinesParts = dataLine.split(",");
-                switch (dataLinesParts[1]){
-                    case "Epic":
-                        EpicTask epicTask = new EpicTask(dataLinesParts[2], dataLinesParts[4]);
-                        epicTask.setStatus(dataLinesParts[3]);
-                        super.idCounter = Integer.valueOf(dataLinesParts[0]);
-                        epicTask.setId(super.idCounter);
-                        for (int i = 5; i <= dataLinesParts.length-1; i++){
-                            epicTask.addSubTaskId(Integer.valueOf(dataLinesParts[i]));
+            while (bufferedReader.ready()) {
+                String dataLine = bufferedReader.readLine();
+                if (!dataLine.isBlank()) {
+                    String[] dataLinesParts = dataLine.split(",");
+                    if (dataLinesParts.length < 5) {
+                        continue;
+                    }
+                    switch (dataLinesParts[1]) {
+                        case "Epic":
+                            EpicTask epicTask = new EpicTask(dataLinesParts[2], dataLinesParts[4]);
+                            epicTask.setStatus(dataLinesParts[3]);
+                            idCounter = Integer.valueOf(dataLinesParts[0]);
+                            epicTask.setId(super.idCounter);
+                            for (int i = 5; i <= dataLinesParts.length - 1; i++) {
+                                epicTask.addSubTaskId(Integer.valueOf(dataLinesParts[i]));
+                            }
+                            super.addEmptyEpicTask(epicTask);
+                            break;
+                        case "SubTask":
+                            SubTask subTask = new SubTask(dataLinesParts[2], dataLinesParts[4],
+                                    Integer.valueOf(dataLinesParts[5]));
+                            subTask.setStatus(dataLinesParts[3]);
+                            idCounter = Integer.valueOf(dataLinesParts[0]);
+                            subTask.setId(super.idCounter);
+                            super.addSubTask(subTask);
+                            break;
+                        case "Regular":
+                            Task task = new Task(dataLinesParts[2], dataLinesParts[4]);
+                            task.setStatus(dataLinesParts[3]);
+                            idCounter = Integer.valueOf(dataLinesParts[0]);
+                            task.setId(super.idCounter);
+                            super.addRegularTask(task);
+                    }
+                } else {
+                    dataLine = bufferedReader.readLine();
+                    if (dataLine != null && !dataLine.isBlank()) {
+                        String[] historyIDs = dataLine.split(",");
+                        for (int i = 0; i <= historyIDs.length - 1; i++) {
+                            history.add(tasksData.get(Integer.valueOf(historyIDs[i])));
                         }
-                        super.addEmptyEpicTask(epicTask);
-                        break;
-                    case "SubTask":
-                        SubTask subTask = new SubTask(dataLinesParts[2], dataLinesParts[4],
-                                Integer.valueOf(dataLinesParts[5]));
-                        subTask.setStatus(dataLinesParts[3]);
-                        super.idCounter = Integer.valueOf(dataLinesParts[0]);
-                        subTask.setId(super.idCounter);
-                        super.addSubTask(subTask);
-                        break;
-                    case "Regular":
-                        Task task = new Task(dataLinesParts[2], dataLinesParts[4]);
-                        task.setStatus(dataLinesParts[3]);
-                        super.idCounter = Integer.valueOf(dataLinesParts[0]);
-                        task.setId(super.idCounter);
-                        super.addRegularTask(task);
-                }
-            } else {
-                dataLine = bufferedReader.readLine();
-                if (!dataLine.trim().isBlank()){
-                    String[] historyIDs = dataLine.split(",");
-                    for (int i = 0; i <= historyIDs.length-1; i++) {
-                        super.history.add(tasksData.get(Integer.valueOf(historyIDs[i])));
                     }
                 }
             }
         }
-
-        bufferedReader.close();
     }
 
+    public String serializeEpic(int taskID){
+        StringBuilder returningString = new StringBuilder();
+        returningString.append(tasksData.get(taskID).getId() + ",");
+        returningString.append("Epic,");
+        returningString.append(tasksData.get(taskID).getTitle() + ",");
+        returningString.append(tasksData.get(taskID).getStatus() + ",");
+        returningString.append(tasksData.get(taskID).getDescription() + ",");
+        for (Integer subTasksID : ((EpicTask) tasksData.get(taskID)).getFullSubTasksList()) {
+            returningString.append(subTasksID + ",");
+        }
+        returningString.deleteCharAt(returningString.length()-1);
+        return returningString.toString();
+    }
+
+    public String serializeSubTask(int taskID){
+        StringBuilder returningString = new StringBuilder();
+        returningString.append(tasksData.get(taskID).getId() + ",");
+        returningString.append("SubTask,");
+        returningString.append(tasksData.get(taskID).getTitle() + ",");
+        returningString.append(tasksData.get(taskID).getStatus() + ",");
+        returningString.append(tasksData.get(taskID).getDescription() + ",");
+        returningString.append(((SubTask) tasksData.get(taskID)).getBoundedTo());
+        return returningString.toString();
+    }
+
+    public String serializeRegularTask(int taskID){
+        StringBuilder returningString = new StringBuilder();
+        returningString.append(tasksData.get(taskID).getId() + ",");
+        returningString.append("Regular,");
+        returningString.append(tasksData.get(taskID).getTitle() + ",");
+        returningString.append(tasksData.get(taskID).getStatus() + ",");
+        returningString.append(tasksData.get(taskID).getDescription());
+        return returningString.toString();
+    }
+
+
     public void save() throws ManagerSaveException {
-        try {
-            this.writer = new FileWriter(dataFile);
+        try (Writer writer = new FileWriter(fileName)){
             writer.write("id,type,name,status,description,bounds\n");
 
-            for (Integer key : tasksData.keySet()) {
-                writer.write(tasksData.get(key).getId() + ",");
-                if (tasksData.get(key) instanceof EpicTask) {
-                    writer.write("Epic,");
-                } else if (tasksData.get(key) instanceof SubTask) {
-                    writer.write("SubTask,");
+            for (Integer taskID : tasksData.keySet()) {
+                if (tasksData.get(taskID) instanceof EpicTask) {
+                    writer.write(serializeEpic(taskID) + "\n");
+                } else if (tasksData.get(taskID) instanceof SubTask) {
+                    writer.write(serializeSubTask(taskID) + "\n");
                 } else {
-                    writer.write("Regular,");
-                }
-                writer.write(tasksData.get(key).getTitle() + ",");
-                writer.write(tasksData.get(key).getStatus() + ",");
-                writer.write(tasksData.get(key).getDescription());
-                if (tasksData.get(key) instanceof EpicTask) {
-                    for (Integer subTasksID : ((EpicTask) tasksData.get(key)).getFullSubTasksList()) {
-                        writer.write("," + subTasksID);
-                    }
-                    writer.write("\n");
-                } else if (tasksData.get(key) instanceof SubTask) {
-                    writer.write("," + ((SubTask) tasksData.get(key)).getBoundedTo() + "\n");
-                } else {
-                    writer.write("\n");
+                    writer.write(serializeRegularTask(taskID) + "\n");
                 }
             }
-
-            writer.write("\n");
 
             List<Task> historylist = history.getHistory();
 
@@ -115,7 +133,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager{
                     writer.write(task.getId() + ",");
                 }
             }
-            writer.close();
         } catch (IOException exception) {
             throw new ManagerSaveException("Ошибка записи в файл.");
         }
