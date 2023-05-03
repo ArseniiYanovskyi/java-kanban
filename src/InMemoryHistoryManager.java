@@ -1,17 +1,20 @@
 import HistoryData.HistoryNode;
 import TaskData.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+
+import java.time.Instant;
+import java.util.*;
 
 public class InMemoryHistoryManager implements HistoryManager{
     private HistoryLinkedList historyLinkedList;
+
     public InMemoryHistoryManager(){
         historyLinkedList = new HistoryLinkedList();
     }
     @Override
     public void add(Task task){
-        historyLinkedList.linkLast(task);
+        if (task != null) {
+            historyLinkedList.linkLast(task);
+        }
     }
 
     @Override
@@ -57,7 +60,7 @@ public class InMemoryHistoryManager implements HistoryManager{
             } else {
                 historyNode.nextNode.prevNode = historyNode.prevNode;
                 historyNode.prevNode.nextNode = historyNode.nextNode;
-            } //опечатка со скобочкой в прошлый раз вышла =(
+            }
             historyNodeHashMap.remove(historyNode.data.getId());
             }
 
@@ -68,10 +71,11 @@ public class InMemoryHistoryManager implements HistoryManager{
                 tailNode = historyNodeHashMap.get(task.getId());
             } else if (historyNodeHashMap.containsKey(task.getId())){
                 HistoryNode thisNode = historyNodeHashMap.get(task.getId());
+
                 if (thisNode.equals(tailNode)){
                     return;
                 }
-                if (headNode.equals(thisNode)){
+                if (thisNode.equals(headNode)){
                     headNode = thisNode.nextNode;
                 }
 
@@ -94,6 +98,7 @@ public class InMemoryHistoryManager implements HistoryManager{
 
 
         public ArrayList<Task> getTasks(){
+
             ArrayList<Task> returningList = new ArrayList<>();
 
             if (!historyNodeHashMap.isEmpty()){

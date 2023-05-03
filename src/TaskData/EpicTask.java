@@ -1,5 +1,6 @@
 package TaskData;
 
+import java.time.Instant;
 import java.util.ArrayList;
 
 public class EpicTask extends Task {
@@ -22,6 +23,10 @@ public class EpicTask extends Task {
 
     public void resetStatus(){
         this.status = Status.NEW;
+    }
+
+    public void setEndTimeForEpic(Instant endTime){
+        this.endTime = endTime;
     }
 
     @Override

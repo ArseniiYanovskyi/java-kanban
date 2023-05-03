@@ -1,6 +1,8 @@
 import TaskData.*;
 import org.jetbrains.annotations.NotNull;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -119,7 +121,10 @@ public class Main {
         String title = scanner.nextLine() + "";
         System.out.println("Введите описание задания:");
         String description = scanner.nextLine() + "";
-        return new Task(title, description);
+        Task newTask = new Task(title, description);
+        newTask.setStartTime(Instant.now());
+        newTask.setDuration(Instant.ofEpochSecond(60*60*2));
+        return newTask;
     }
     public static @NotNull EpicTask createEpicTask(Scanner scanner){
         System.out.println("Введите название \"Эпик\" задания:");
@@ -138,7 +143,10 @@ public class Main {
             String title = scanner.nextLine() + "";
             System.out.println("Введите описание подзадачи:");
             String description = scanner.nextLine() + "";
-            subTasks.add(new SubTask(title, description,0));
+            SubTask newSubTask = new SubTask(title, description, 0);
+            //newSubTask.setStartTime(Instant.now());
+            //newSubTask.setDuration(Instant.ofEpochSecond(60*60*2));
+            subTasks.add(newSubTask);
         }
         return subTasks;
     }
@@ -150,7 +158,10 @@ public class Main {
         String title = scanner.nextLine() + "";
         System.out.println("Введите описание подзадачи:");
         String description = scanner.nextLine() + "";
-        return new SubTask(title, description, bound);
+        SubTask newSubTask = new SubTask(title, description, bound);
+        newSubTask.setStartTime(Instant.now());
+        newSubTask.setDuration(Instant.ofEpochSecond(60*60*2));
+        return newSubTask;
     }
 
     public static void printMenu(){
