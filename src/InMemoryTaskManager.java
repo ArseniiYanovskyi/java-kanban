@@ -17,44 +17,39 @@ public class InMemoryTaskManager implements TaskManager{
         prioritizedByStartTimeTaskMap = new TreeMap<>();
     }
 
-    public void removeTimeIfNotValidated(int taskId){
-        //в задании не сказано что именно нужно делать при валидизации,
-        //пока что просто сделаю удаление времени при ошибке валидизации
-        if (tasksData.get(taskId).getOptionalOfStartTime().isEmpty()){
-            return;
-        }
-        if (tasksData.get(taskId).getDurationOfMillis() == 0){
-            tasksData.get(taskId).resetTimeValues();
-            return;
+    public boolean isTaskValid(Task taskForValidation){
+        //допустить возможность добавление задачи, где время не указано?
+        if (taskForValidation.getStartTime() == null){
+            return true;
         }
 
         List<Task> crossingTimeTasks = prioritizedByStartTimeTaskMap.keySet().stream()
                 .map(key -> prioritizedByStartTimeTaskMap.get(key))
                 .filter(task -> task.getOptionalOfStartTime().isPresent() && task.getDurationOfMillis() != 0)
                 .filter(task -> {
-                        if (tasksData.get(taskId).getStartTimeOfMillis() > task.getStartTimeOfMillis()) {
-                                return (tasksData.get(taskId).getStartTimeOfMillis()
+                        if (taskForValidation.getStartTimeOfMillis() > task.getStartTimeOfMillis()) {
+                                return (taskForValidation.getStartTimeOfMillis()
                                         - task.getStartTimeOfMillis()
                                         - task.getDurationOfMillis()) < 0;
                             } else {
                                 return (task.getStartTimeOfMillis()
-                                        - tasksData.get(taskId).getStartTimeOfMillis()
-                                        - tasksData.get(taskId).getDurationOfMillis()) < 0;
+                                        - taskForValidation.getStartTimeOfMillis()
+                                        - taskForValidation.getDurationOfMillis()) < 0;
                             }})
                 .collect(Collectors.toList());
         if (crossingTimeTasks.isEmpty()){
-            return;
+            return true;
         }
-        System.out.println("Validation of task with ID " + taskId + " failed, time crossing with:" );
+        System.out.println("Validation of task failed, time crossing with:" );
         for (Task task : crossingTimeTasks){
             task.printInfo();
         }
-        tasksData.get(taskId).resetTimeValues();
+        return false;
     }
 
     protected void addTaskToPrioritizedMap(int taskId){
-        if (tasksData.get(taskId).getOptionalOfStartTime().isPresent()) {
-            prioritizedByStartTimeTaskMap.put(tasksData.get(taskId).getOptionalOfStartTime().get(), tasksData.get(taskId));
+        if (tasksData.get(taskId).getStartTime() != null) {
+            prioritizedByStartTimeTaskMap.put(tasksData.get(taskId).getStartTime(), tasksData.get(taskId));
         } else {
             prioritizedByStartTimeTaskMap.put(
                     Instant.ofEpochMilli(FOR_KEY_TO_PRIORITIZED_MAP_WHEN_NO_VALUE + tasksData.get(taskId).getId()),
@@ -111,16 +106,20 @@ public class InMemoryTaskManager implements TaskManager{
                 .map(Optional::get)
                 .max(comparatorForEpicTimes);
 
-        ((EpicTask) tasksData.get(taskId)).setEndTimeForEpic((latestFinish.isPresent()) ? latestFinish.get() : null);
+        ((EpicTask) tasksData.get(taskId)).setEndTime((latestFinish.isPresent()) ? latestFinish.get() : null);
     }
 
     @Override
     public void addRegularTask(Task newTask){
+        if (!isTaskValid(newTask)){
+            //отправлять исключение?
+            //throw new RuntimeException("Invalid time for new task");
+            return;
+        }
         if (newTask.getId() != idCounter || newTask.getId() == 0){
             newTask.setId(++idCounter);
         }
         tasksData.put(idCounter, newTask);
-        removeTimeIfNotValidated(idCounter);
         addTaskToPrioritizedMap(idCounter);
         System.out.println("Задание добавлено! (ID - " + idCounter + ")");
     }
@@ -130,11 +129,13 @@ public class InMemoryTaskManager implements TaskManager{
         epicTask.setId(++idCounter);
         if (subTasks != null) {
             for (SubTask subTask : subTasks) {
+                if (!isTaskValid(subTask)){
+                    continue;
+                }
                 subTask.setId(++idCounter);
                 subTask.setBoundedTo(epicTask.getId());
                 tasksData.put(idCounter, subTask);
                 epicTask.addSubTaskId(idCounter);
-                removeTimeIfNotValidated(idCounter);
                 addTaskToPrioritizedMap(idCounter);
             }
             System.out.println("Подзадачи добавлены!");
@@ -148,7 +149,11 @@ public class InMemoryTaskManager implements TaskManager{
 
     @Override
     public void addEmptyEpicTask(EpicTask epicTask){
+        //по условию задания время EpicTask расчитывается из подзадач
+        //я не добавляю на эпики проверки по этой причине
         if (epicTask.getId() != idCounter || epicTask.getId() == 0) {
+            //при загрузке из файлов переменная idCounter принимает
+            //новое значение после загруки каждого task, перезапись невозможна
             epicTask.setId(++idCounter);
         }
         tasksData.put(epicTask.getId(), epicTask);
@@ -159,12 +164,15 @@ public class InMemoryTaskManager implements TaskManager{
 
     @Override
     public void addSubTask (SubTask newSubTask){
+        if (!isTaskValid(newSubTask)){
+            return;
+        }
+
         if (newSubTask.getId() != idCounter || newSubTask.getId() == 0){
             newSubTask.setId(++idCounter);
         }
 
         tasksData.put(newSubTask.getId(), newSubTask);
-        removeTimeIfNotValidated(newSubTask.getId());
         addTaskToPrioritizedMap(newSubTask.getId());
 
         if (tasksData.containsKey(newSubTask.getBoundedTo())) {
@@ -178,9 +186,12 @@ public class InMemoryTaskManager implements TaskManager{
 
     @Override
     public void editRegularTask(Task editedTask){
+        if (!isTaskValid(editedTask)){
+            return;
+        }
+
         tasksData.remove(editedTask.getId());
         tasksData.put(editedTask.getId(), editedTask);
-        removeTimeIfNotValidated(editedTask.getId());
         addTaskToPrioritizedMap(editedTask.getId());
     }
 
@@ -195,11 +206,13 @@ public class InMemoryTaskManager implements TaskManager{
 
     @Override
     public void editSubTask(SubTask editedSubTask){
+        if (!isTaskValid(editedSubTask)){
+            return;
+        }
         tasksData.remove(editedSubTask.getId());
         tasksData.put(editedSubTask.getId(), editedSubTask);
         updateEpicTaskStatus(editedSubTask.getBoundedTo());
         calculateEpicTaskTimers(editedSubTask.getBoundedTo());
-        removeTimeIfNotValidated(editedSubTask.getId());
         addTaskToPrioritizedMap(editedSubTask.getId());
     }
 

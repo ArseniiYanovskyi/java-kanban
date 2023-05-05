@@ -17,15 +17,15 @@ public class EpicTask extends Task {
         return subTasksIdentifiers;
     }
 
-    public void removeSubTaskId(int subTaskId){
-        subTasksIdentifiers.remove(Integer.valueOf(subTaskId));
+    public void removeSubTaskId(Integer subTaskId){
+        subTasksIdentifiers.remove(subTaskId);
     }
 
     public void resetStatus(){
         this.status = Status.NEW;
     }
 
-    public void setEndTimeForEpic(Instant endTime){
+    public void setEndTime(Instant endTime){
         this.endTime = endTime;
     }
 

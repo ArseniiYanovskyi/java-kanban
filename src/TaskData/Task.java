@@ -71,17 +71,19 @@ public class Task {
     }
 
     public long getStartTimeOfMillis(){
-        if (startTime != null) {return startTime.toEpochMilli();}
-        else {return 0;}
+        return startTime != null ? duration.toEpochMilli() : 0;
     }
 
     public long getDurationOfMillis(){
-        if (duration != null) {return duration.toEpochMilli();}
-        else {return 0;}
+        return duration != null ? duration.toEpochMilli() : 0;
     }
 
     public Optional<Instant> getOptionalOfStartTime() {
         return Optional.ofNullable(startTime);
+    }
+
+    public Instant getStartTime(){
+        return this.startTime;
     }
 
     public Optional<Instant> getOptionalOfEndTime() {
