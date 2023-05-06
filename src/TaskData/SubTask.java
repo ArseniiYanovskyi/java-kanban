@@ -8,6 +8,11 @@ public class SubTask extends Task {
         this.boundedTo = boundedTo;
     }
 
+    public SubTask(String title, String description, int boundedTo, int id) {
+        super(title, description, id);
+        this.boundedTo = boundedTo;
+    }
+
     public int getBoundedTo() {
         return boundedTo;
     }

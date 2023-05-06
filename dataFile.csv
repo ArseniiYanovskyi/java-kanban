@@ -1,0 +1,9 @@
+id,type,name,status,description,startTimeInMillis,durationInMillis,bounds
+1,Regular,t,NEW,d,7200000,7200000
+2,Epic,"Эпик" tt,NEW,dd,EPIC,EPIC,3,4,5
+3,SubTask,ttt,NEW,ddd,0,0,2
+4,SubTask,tttt,NEW,dddd,0,0,2
+5,SubTask,ttttt,NEW,ddddd,0,0,2
+6,Epic,"Эпик" uy,NEW,yu,EPIC,EPIC,7
+7,SubTask,hj,NEW,hy,0,0,6
+

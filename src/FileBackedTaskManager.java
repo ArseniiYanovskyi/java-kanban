@@ -28,6 +28,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager{
         try (BufferedReader bufferedReader = new BufferedReader(reader)) {
             bufferedReader.readLine();
 
+            int maxIdValue = 1;
+
             while (bufferedReader.ready()) {
                 String dataLine = bufferedReader.readLine();
                 if (!dataLine.isBlank()) {
@@ -37,10 +39,11 @@ public class FileBackedTaskManager extends InMemoryTaskManager{
                     }
                     switch (dataLinesParts[1]) {
                         case "Epic":
-                            EpicTask epicTask = new EpicTask(dataLinesParts[2], dataLinesParts[4]);
+                            EpicTask epicTask = new EpicTask(dataLinesParts[2], dataLinesParts[4], Integer.valueOf(dataLinesParts[0]));
                             epicTask.setStatus(dataLinesParts[3]);
-                            idCounter = Integer.valueOf(dataLinesParts[0]);
-                            epicTask.setId(super.idCounter);
+                            if (maxIdValue < epicTask.getId()){
+                                maxIdValue = epicTask.getId();
+                            }
                             for (int i = 7; i <= dataLinesParts.length - 1; i++) {
                                 epicTask.addSubTaskId(Integer.valueOf(dataLinesParts[i]));
                             }
@@ -48,7 +51,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager{
                             break;
                         case "SubTask":
                             SubTask subTask = new SubTask(dataLinesParts[2], dataLinesParts[4],
-                                    Integer.valueOf(dataLinesParts[7]));
+                                    Integer.valueOf(dataLinesParts[7]), Integer.valueOf(dataLinesParts[0]));
                             subTask.setStatus(dataLinesParts[3]);
                             if (!dataLinesParts[5].equals("0")) {
                                 subTask.setStartTime(Instant.ofEpochMilli(Long.parseLong(dataLinesParts[5])));
@@ -56,12 +59,13 @@ public class FileBackedTaskManager extends InMemoryTaskManager{
                             if (!dataLinesParts[6].equals("0")) {
                                 subTask.setDuration(Instant.ofEpochMilli(Long.parseLong(dataLinesParts[6])));
                             }
-                            idCounter = Integer.valueOf(dataLinesParts[0]);
-                            subTask.setId(super.idCounter);
+                            if (maxIdValue < subTask.getId()){
+                                maxIdValue = subTask.getId();
+                            }
                             super.addSubTask(subTask);
                             break;
                         case "Regular":
-                            Task task = new Task(dataLinesParts[2], dataLinesParts[4]);
+                            Task task = new Task(dataLinesParts[2], dataLinesParts[4], Integer.valueOf(dataLinesParts[0]));
                             task.setStatus(dataLinesParts[3]);
                             if (!dataLinesParts[5].equals("0")) {
                                 task.setStartTime(Instant.ofEpochMilli(Long.parseLong(dataLinesParts[5])));
@@ -69,8 +73,9 @@ public class FileBackedTaskManager extends InMemoryTaskManager{
                             if (!dataLinesParts[6].equals("0")) {
                                 task.setDuration(Instant.ofEpochMilli(Long.parseLong(dataLinesParts[6])));
                             }
-                            idCounter = Integer.valueOf(dataLinesParts[0]);
-                            task.setId(super.idCounter);
+                            if (maxIdValue < task.getId()){
+                                maxIdValue = task.getId();
+                            }
                             super.addRegularTask(task);
                     }
                 } else {
@@ -83,6 +88,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager{
                     }
                 }
             }
+            idCounter = maxIdValue;
         }
     }
 

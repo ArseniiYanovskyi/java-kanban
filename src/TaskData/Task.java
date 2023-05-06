@@ -26,6 +26,13 @@ public class Task {
         this.id = 0;
     }
 
+    public Task(String title, String description, int id){
+        this.title = title;
+        this.description = description;
+        this.status = Status.NEW;
+        this.id = id;
+    }
+
     public void resetTimeValues(){
         this.startTime = null;
         this.duration = null;
