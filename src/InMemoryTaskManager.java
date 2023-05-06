@@ -17,15 +17,21 @@ public class InMemoryTaskManager implements TaskManager{
         prioritizedByStartTimeTaskMap = new TreeMap<>();
     }
 
+    public class ValidationException extends RuntimeException{
+        @Override
+        public String getMessage(){
+            return "Invalid time for new task";
+        }
+    }
+
     public boolean isTaskValid(Task taskForValidation){
-        //допустить возможность добавление задачи, где время не указано?
         if (taskForValidation.getStartTime() == null){
             return true;
         }
 
         List<Task> crossingTimeTasks = prioritizedByStartTimeTaskMap.keySet().stream()
                 .map(key -> prioritizedByStartTimeTaskMap.get(key))
-                .filter(task -> task.getOptionalOfStartTime().isPresent() && task.getDurationOfMillis() != 0)
+                .filter(task -> task.getStartTime() != null && task.getDurationOfMillis() != 0)
                 .filter(task -> {
                         if (taskForValidation.getStartTimeOfMillis() > task.getStartTimeOfMillis()) {
                                 return (taskForValidation.getStartTimeOfMillis()
@@ -44,7 +50,7 @@ public class InMemoryTaskManager implements TaskManager{
         for (Task task : crossingTimeTasks){
             task.printInfo();
         }
-        return false;
+        throw new ValidationException();
     }
 
     protected void addTaskToPrioritizedMap(int taskId){
@@ -58,7 +64,6 @@ public class InMemoryTaskManager implements TaskManager{
     }
 
     public TreeSet<Task> getPrioritizedTasks() {
-        //в задании советуют использовать эту структуру, или изменить её к TreeMap?
         TreeSet<Task> returningTreeSet = new TreeSet<>();
         for (Instant instantKey : prioritizedByStartTimeTaskMap.keySet()){
             returningTreeSet.add(prioritizedByStartTimeTaskMap.get(instantKey));
@@ -70,8 +75,8 @@ public class InMemoryTaskManager implements TaskManager{
         if (!tasksData.containsKey(taskId)){
             return;
         }
-        if (tasksData.get(taskId).getOptionalOfStartTime().isPresent()) {
-            prioritizedByStartTimeTaskMap.remove(tasksData.get(taskId).getOptionalOfStartTime().get());
+        if (tasksData.get(taskId).getStartTime() != null) {
+            prioritizedByStartTimeTaskMap.remove(tasksData.get(taskId).getStartTime());
         } else {
             prioritizedByStartTimeTaskMap.remove(
                     Instant.ofEpochMilli(FOR_KEY_TO_PRIORITIZED_MAP_WHEN_NO_VALUE + tasksData.get(taskId).getId())
@@ -91,9 +96,8 @@ public class InMemoryTaskManager implements TaskManager{
         Optional<Instant> earlierStart = subTasksIdentifiers((EpicTask) tasksData.get(taskId)).stream()
                 .filter(subTaskId -> tasksData.containsKey(subTaskId))
                 .map(subTaskId -> tasksData.get(subTaskId))
-                .map(task -> task.getOptionalOfStartTime())
-                .filter(Optional::isPresent)
-                .map(Optional::get)
+                .filter(task -> task.getStartTime() != null)
+                .map(task -> task.getStartTime())
                 .min(comparatorForEpicTimes);
 
         tasksData.get(taskId).setStartTime((earlierStart.isPresent()) ? earlierStart.get() : null);
@@ -101,9 +105,8 @@ public class InMemoryTaskManager implements TaskManager{
         Optional<Instant> latestFinish = subTasksIdentifiers((EpicTask) tasksData.get(taskId)).stream()
                 .filter(subTaskId -> tasksData.containsKey(subTaskId))
                 .map(subTaskId -> tasksData.get(subTaskId))
-                .map(task -> task.getOptionalOfEndTime())
-                .filter(Optional::isPresent)
-                .map(Optional::get)
+                .filter(task -> task.getEndTime() != null)
+                .map(task -> task.getEndTime())
                 .max(comparatorForEpicTimes);
 
         ((EpicTask) tasksData.get(taskId)).setEndTime((latestFinish.isPresent()) ? latestFinish.get() : null);
@@ -111,10 +114,14 @@ public class InMemoryTaskManager implements TaskManager{
 
     @Override
     public void addRegularTask(Task newTask){
-        if (!isTaskValid(newTask)){
-            //отправлять исключение?
-            //throw new RuntimeException("Invalid time for new task");
+        try {
+            isTaskValid(newTask);
+        } catch (ValidationException validationException){
+            System.out.println(validationException.getMessage());
             return;
+        }
+        if (newTask.getId() > idCounter){
+            idCounter = newTask.getId();
         }
         if (newTask.getId() != idCounter || newTask.getId() == 0){
             newTask.setId(++idCounter);
@@ -129,7 +136,10 @@ public class InMemoryTaskManager implements TaskManager{
         epicTask.setId(++idCounter);
         if (subTasks != null) {
             for (SubTask subTask : subTasks) {
-                if (!isTaskValid(subTask)){
+                try {
+                    isTaskValid(subTask);
+                } catch (ValidationException validationException){
+                    System.out.println(validationException.getMessage());
                     continue;
                 }
                 subTask.setId(++idCounter);
@@ -149,13 +159,13 @@ public class InMemoryTaskManager implements TaskManager{
 
     @Override
     public void addEmptyEpicTask(EpicTask epicTask){
-        //по условию задания время EpicTask расчитывается из подзадач
-        //я не добавляю на эпики проверки по этой причине
+        if (epicTask.getId() > idCounter){
+            idCounter = epicTask.getId();
+        }
         if (epicTask.getId() != idCounter || epicTask.getId() == 0) {
-            //при загрузке из файлов переменная idCounter принимает
-            //новое значение после загруки каждого task, перезапись невозможна
             epicTask.setId(++idCounter);
         }
+
         tasksData.put(epicTask.getId(), epicTask);
         updateEpicTaskStatus(epicTask.getId());
         addTaskToPrioritizedMap(epicTask.getId());
@@ -164,10 +174,16 @@ public class InMemoryTaskManager implements TaskManager{
 
     @Override
     public void addSubTask (SubTask newSubTask){
-        if (!isTaskValid(newSubTask)){
+        try {
+            isTaskValid(newSubTask);
+        } catch (ValidationException validationException){
+            System.out.println(validationException.getMessage());
             return;
         }
 
+        if (newSubTask.getId() > idCounter){
+            idCounter = newSubTask.getId();
+        }
         if (newSubTask.getId() != idCounter || newSubTask.getId() == 0){
             newSubTask.setId(++idCounter);
         }
@@ -186,7 +202,10 @@ public class InMemoryTaskManager implements TaskManager{
 
     @Override
     public void editRegularTask(Task editedTask){
-        if (!isTaskValid(editedTask)){
+        try {
+            isTaskValid(editedTask);
+        } catch (ValidationException validationException){
+            System.out.println(validationException.getMessage());
             return;
         }
 
@@ -206,7 +225,10 @@ public class InMemoryTaskManager implements TaskManager{
 
     @Override
     public void editSubTask(SubTask editedSubTask){
-        if (!isTaskValid(editedSubTask)){
+        try {
+            isTaskValid(editedSubTask);
+        } catch (ValidationException validationException){
+            System.out.println(validationException.getMessage());
             return;
         }
         tasksData.remove(editedSubTask.getId());

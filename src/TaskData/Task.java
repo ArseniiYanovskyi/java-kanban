@@ -85,7 +85,9 @@ public class Task {
     public Instant getStartTime(){
         return this.startTime;
     }
-
+    public Instant getEndTime(){
+        return this.endTime;
+    }
     public Optional<Instant> getOptionalOfEndTime() {
         return Optional.ofNullable(endTime);
     }
