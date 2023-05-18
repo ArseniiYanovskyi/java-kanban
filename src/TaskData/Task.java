@@ -13,7 +13,7 @@ public class Task {
     protected Instant startTime;
     protected Instant duration;
     protected Instant endTime;
-    protected DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm, dd.MM.yyyy");
+    static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm, dd.MM.yyyy");
     protected Status status;
     private String title;
     private String description;

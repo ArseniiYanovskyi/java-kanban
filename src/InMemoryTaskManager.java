@@ -4,7 +4,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class InMemoryTaskManager implements TaskManager{
+public class InMemoryTaskManager implements TaskManager {
     protected HashMap<Integer, Task> tasksData;
     protected int idCounter;
     protected HistoryManager history;
@@ -63,6 +63,7 @@ public class InMemoryTaskManager implements TaskManager{
         }
     }
 
+    @Override
     public TreeSet<Task> getPrioritizedTasks() {
         TreeSet<Task> returningTreeSet = new TreeSet<>();
         for (Instant instantKey : prioritizedByStartTimeTaskMap.keySet()){
@@ -394,20 +395,29 @@ public class InMemoryTaskManager implements TaskManager{
 
      @Override
     public Task getTask(int taskId){
-         history.add(tasksData.get(taskId));
-         return tasksData.get(taskId);
+        if (tasksData.containsKey(taskId)) {
+            history.add(tasksData.get(taskId));
+            return tasksData.get(taskId);
+        }
+        return null;
     }
 
     @Override
     public EpicTask getEpic(int taskId) {
-        history.add(tasksData.get(taskId));
-        return ((EpicTask) tasksData.get(taskId));
+        if (tasksData.containsKey(taskId) && tasksData.get(taskId) instanceof EpicTask) {
+            history.add(tasksData.get(taskId));
+            return ((EpicTask) tasksData.get(taskId));
+        }
+        return null;
     }
 
     @Override
     public SubTask getSubtask(int taskId){
-        history.add(tasksData.get(taskId));
-        return ((SubTask) tasksData.get(taskId));
+        if (tasksData.containsKey(taskId) && tasksData.get(taskId) instanceof SubTask) {
+            history.add(tasksData.get(taskId));
+            return ((SubTask) tasksData.get(taskId));
+        }
+        return null;
     }
 
     @Override

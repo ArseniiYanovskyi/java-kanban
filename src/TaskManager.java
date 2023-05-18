@@ -2,6 +2,7 @@ import TaskData.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeSet;
 
 public interface TaskManager {
     public void addRegularTask(Task newTask);
@@ -28,6 +29,8 @@ public interface TaskManager {
     public Task getTask(int id);
     public EpicTask getEpic(int id);
     public SubTask getSubtask(int id);
+
+    public TreeSet<Task> getPrioritizedTasks();
 
     public List<Task> getHistory();
 }

@@ -1,7 +1,6 @@
 import HistoryData.HistoryNode;
 import TaskData.*;
 
-import java.time.Instant;
 import java.util.*;
 
 public class InMemoryHistoryManager implements HistoryManager{

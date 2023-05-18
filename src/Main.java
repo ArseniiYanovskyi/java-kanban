@@ -1,20 +1,25 @@
 import TaskData.*;
 import org.jetbrains.annotations.NotNull;
 
-import java.time.Duration;
+import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException, InterruptedException {
+        KVServer kvServer = new KVServer();
+        kvServer.start();
+
         Scanner scanner = new Scanner(System.in);
-        TaskManager taskManager = Managers.getFileBacked("dataFile.csv");
+        TaskManager taskManager = Managers.getDefault();
         boolean programIsOn = true;
         while (programIsOn) {
             printMenu();
             int option = Integer.parseInt(scanner.nextLine());
             switch (option) {
+                case 11:
+                    taskManager = Managers.getDefault();
                 case 1:
                     taskManager.printAllTasks();
                     break;
