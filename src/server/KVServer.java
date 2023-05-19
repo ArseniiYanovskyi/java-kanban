@@ -1,3 +1,5 @@
+package server;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.IOException;
@@ -57,7 +59,6 @@ public class KVServer {
     }
 
     private void save(HttpExchange h) throws IOException {
-        //System.out.println(h.getRequestBody().readAllBytes().toString() + "<-");
         try {
             System.out.println("\n/save");
             if (!hasAuth(h)) {
@@ -74,7 +75,6 @@ public class KVServer {
                     return;
                 }
                 String value = readText(h);
-                System.out.println("-->" + value +"<--");
                 if (value.isEmpty()) {
                     System.out.println("Value для сохранения пустой. value указывается в теле запроса");
                     h.sendResponseHeaders(400, 0);

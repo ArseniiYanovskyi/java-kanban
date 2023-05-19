@@ -1,73 +1,51 @@
-import TaskData.EpicTask;
-import TaskData.SubTask;
-import TaskData.Task;
+package server;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import TaskData.*;
 import com.sun.net.httpserver.HttpServer;
-//import com.sun.net.httpserver.HttpsServer;
+import models.*;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.TreeSet;
 
-public class HttpTaskServer {
-    public static final int PORT = 8080;
-    public static HttpServer httpServer;
+public class ServerHandler {
+
+    private static TaskManager taskManager;
     public static Gson gson;
-    public static TaskManager taskManager;
-    public HttpTaskServer() throws IOException {
-        httpServer = HttpServer.create();
-        httpServer.bind(new InetSocketAddress(PORT), 0);
-        httpServer.createContext("/tasks", new PrioritizedTaskHandler());
-        httpServer.createContext("/tasks/task", new TaskHandler());
-        httpServer.createContext("/tasks/epic", new EpicTaskHandler());
-        httpServer.createContext("/tasks/subtask", new SubTaskHandler());
-        httpServer.createContext("/tasks/history", new HistoryHandler());
-        httpServer.start();
+    public static HttpServer httpServer;
+
+    public ServerHandler(HttpServer httpServer){
+        this.httpServer = httpServer;
         gson = Managers.getGson();
         taskManager = Managers.getFileBacked("dataFile.csv");
-        System.out.println("HttpTaskSever running");
-    }
-
-    public HttpTaskServer(String dataFile) throws IOException {
-        httpServer = HttpServer.create();
-        httpServer.bind(new InetSocketAddress(PORT), 0);
         httpServer.createContext("/tasks", new PrioritizedTaskHandler());
         httpServer.createContext("/tasks/task", new TaskHandler());
         httpServer.createContext("/tasks/epic", new EpicTaskHandler());
         httpServer.createContext("/tasks/subtask", new SubTaskHandler());
         httpServer.createContext("/tasks/history", new HistoryHandler());
-        httpServer.start();
+    }
+
+    public ServerHandler(HttpServer httpServer, String dataFile){
+        this.httpServer = httpServer;
         gson = Managers.getGson();
         taskManager = Managers.getFileBacked(dataFile);
-        System.out.println("HttpTaskSever running");
-    }
-    public static void main(String[] args) throws IOException {
-        HttpTaskServer httpTaskServer = new HttpTaskServer();
-    }
-
-    public static void sendAnswer(HttpExchange httpExchange, String response, int rCode) throws IOException {
-        byte[] responseToBytes = response.getBytes();
-        httpExchange.getResponseHeaders().add("Content-Type", "application/json");
-        httpExchange.sendResponseHeaders(rCode, responseToBytes.length);
-        httpExchange.getResponseBody().write(responseToBytes);
-    }
-
-    public static JsonElement getJson(HttpExchange httpExchange) throws IOException {
-        byte[] reqBody = httpExchange.getRequestBody().readAllBytes();
-        String jsonTask = new String(reqBody, StandardCharsets.UTF_8);
-        return JsonParser.parseString(jsonTask);
+        httpServer.createContext("/tasks", new PrioritizedTaskHandler());
+        httpServer.createContext("/tasks/task", new TaskHandler());
+        httpServer.createContext("/tasks/epic", new EpicTaskHandler());
+        httpServer.createContext("/tasks/subtask", new SubTaskHandler());
+        httpServer.createContext("/tasks/history", new HistoryHandler());
     }
 
     static class PrioritizedTaskHandler implements HttpHandler {
         @Override
-        public void handle(HttpExchange httpExchange) throws IOException{
+        public void handle(HttpExchange httpExchange) throws IOException {
             String method = httpExchange.getRequestMethod();
             switch (method) {
                 case"GET":
@@ -85,6 +63,19 @@ public class HttpTaskServer {
                     sendAnswer(httpExchange, "Method_Not_Allowed", 405);
             }
         }
+    }
+
+    public static void sendAnswer(HttpExchange httpExchange, String response, int rCode) throws IOException {
+        byte[] responseToBytes = response.getBytes();
+        httpExchange.getResponseHeaders().add("Content-Type", "application/json");
+        httpExchange.sendResponseHeaders(rCode, responseToBytes.length);
+        httpExchange.getResponseBody().write(responseToBytes);
+    }
+
+    public static JsonElement getJson(HttpExchange httpExchange) throws IOException {
+        byte[] reqBody = httpExchange.getRequestBody().readAllBytes();
+        String jsonTask = new String(reqBody, StandardCharsets.UTF_8);
+        return JsonParser.parseString(jsonTask);
     }
     static class TaskHandler implements HttpHandler {
         @Override
@@ -271,9 +262,5 @@ public class HttpTaskServer {
             }
             sendAnswer(httpExchange, gson.toJson(taskManager.getHistory()), 200);
         }
-    }
-
-    public void close(){
-        httpServer.stop(0);
     }
 }

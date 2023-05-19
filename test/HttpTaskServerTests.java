@@ -2,17 +2,16 @@ import TaskData.EpicTask;
 import TaskData.SubTask;
 import TaskData.Task;
 import com.google.gson.Gson;
-import com.google.gson.JsonParser;
+import models.Managers;
 import org.junit.jupiter.api.*;
+import server.HttpTaskServer;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Reader;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 public class HttpTaskServerTests {

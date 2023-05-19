@@ -1,5 +1,5 @@
 id,type,name,status,description,startTimeInMillis,durationInMillis,bounds
-1,Regular,RegularTaskTitle,NEW,RegularTaskDesc,0,0
-2,Regular,AnotherRegularTaskTitle,NEW,AnotherRegularTaskDesc,0,0
+1,Epic,testEpicTitle,NEW,TestEpicDesc,EPIC,EPIC,2
+2,SubTask,FirstSubTaskDesc,NEW,FirstSubTaskDesc,0,0,1
 
-2,1,
+1,2,

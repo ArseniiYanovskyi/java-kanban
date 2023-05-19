@@ -1,21 +1,19 @@
-import TaskData.EpicTask;
-import TaskData.SubTask;
-import TaskData.Task;
+package server;
+
+import exceptions.*;
+import services.*;
+import TaskData.*;
+import models.*;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import exceptions.*;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class HttpTaskManager extends FileBackedTaskManager{
+public class HttpTaskManager extends FileBackedTaskManager {
     private KVTaskClient KVClient;
     private Gson gson;
 

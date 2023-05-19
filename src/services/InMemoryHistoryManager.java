@@ -1,9 +1,12 @@
-import HistoryData.HistoryNode;
+package services;
+
+import HistoryData.*;
 import TaskData.*;
+import models.*;
 
 import java.util.*;
 
-public class InMemoryHistoryManager implements HistoryManager{
+public class InMemoryHistoryManager implements HistoryManager {
     private HistoryLinkedList historyLinkedList;
 
     public InMemoryHistoryManager(){
